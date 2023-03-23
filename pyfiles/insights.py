@@ -28,7 +28,8 @@ def to_flattened(df: DataFrame) -> DataFrame:
 
     return (df
             .select("*", F.col("profile.*"))
-            .select("*", F.explode("jobHistory").alias("jobHistoryTemp"))
+            # empty job history should explode as a row as well, we need to keep the user's profile
+            .select("*", F.explode_outer("jobHistory").alias("jobHistoryTemp"))
             .select("*", F.col("jobHistoryTemp.*"))
             .drop("profile", "jobHistory", "jobHistoryTemp"))
 
@@ -57,7 +58,7 @@ def get_avg_salary_for_profile(df: DataFrame, top_k: int = 10) -> DataFrame:
 
     return (df
             .groupBy("id", "firstName", "lastName")
-            .avg("salary")
+            .agg(F.avg("salary").alias("avg_salary"))
             .sort("lastName", ascending=False)
             .limit(top_k))
 
@@ -125,7 +126,7 @@ def get_top_salary_profiles(df: DataFrame, top_k: int = 1) -> DataFrame:
             .limit(top_k))
 
 
-def get_popular_jobs(df: DataFrame, started_in: Union[int, List[int]] = 2019, top_k: int = 1) -> DataFrame:
+def get_popular_jobs(df: DataFrame, started_in: Union[None, int, List[int]] = 2019, top_k: int = 1) -> DataFrame:
     """
     Get the most popular jobs based on how many times people working on the job. We only consider occurrence so far,
     without considering the period people working on that job.
@@ -138,8 +139,8 @@ def get_popular_jobs(df: DataFrame, started_in: Union[int, List[int]] = 2019, to
     :return:
     """
 
-    if started_in:
-        udf_year = F.udf(lambda x: x.year, IntegerType())
+    if started_in is not None:
+        udf_year = F.udf(lambda x: x.year if x is not None else None, IntegerType())
         started_in = [started_in] if isinstance(started_in, int) else started_in
         df = (df
               .withColumn("fromYear", udf_year("fromDate"))
@@ -183,7 +184,7 @@ def get_highest_salary_for_profiles(df: DataFrame) -> DataFrame:
     :return:
     """
 
-    udf_year = F.udf(lambda x: x.year, IntegerType())
+    udf_year = F.udf(lambda x: x.year if x is not None else None, IntegerType())
     window = Window.partitionBy("id").orderBy(F.desc(F.col("salary")))
     return (df
             .withColumn("rowId", F.row_number().over(window))

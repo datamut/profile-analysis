@@ -10,10 +10,10 @@ def get_schema() -> StructType:
             StructField("firstName", StringType(), False),
             StructField("lastName", StringType(), False),
             StructField("jobHistory", ArrayType(StructType([
-                StructField("title", StringType(), False),
-                StructField("location", StringType(), False),
-                StructField("salary", LongType(), False),
-                StructField("fromDate", DateType(), False),
+                StructField("title", StringType(), True),
+                StructField("location", StringType(), True),
+                StructField("salary", LongType(), True),
+                StructField("fromDate", DateType(), True),
                 StructField("toDate", DateType(), True)
             ]), False), False)
         ]), False)
