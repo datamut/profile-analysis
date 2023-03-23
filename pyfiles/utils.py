@@ -9,7 +9,8 @@ from typing import List
 # we can simply fill in the fields and the arguments can be automatically parsed as an object
 @dataclass
 class JobArgs:
-    data_path: str
+    input_path: str
+    output_path: str
 
     @classmethod
     def parse_args(cls, args: List = None) -> __qualname__:

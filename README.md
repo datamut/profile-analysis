@@ -24,15 +24,18 @@ docker build -t profile-analysis .
 2. Run with your dataset path
 
 ```shell
-docker run -it --rm -v /your/path/to/test_data:/data -e DATA_PATH=/data/ profile-analysis
+docker run -it --rm -v /your/path/to/test_data:/data/input -v /your/output/path:/data/output -e INPUT_PATH=/data/input/ -e OUTPUT_PATH=/data/output/1 profile-analysis
 ```
 
 Note:
-(1) You can mount the dataset path `/your/path/to/test_data` from your host/local as `/data/` inside the docker container
-(2) Specify the `-e DATA_PATH=/data/` as the mount path in the docker container
+
++ (1) You can mount the dataset path `/your/path/to/test_data` from your host/local as `/data/` inside the docker container
++ (2) Specify the `-e INPUT_PATH=/data/` as the mount path in the docker container
++ (3) You can also specify the `OUTPUT_PATH` similar with the input_path, by saving the output to you host/local instead of only storing in the container
+
 Then you can run the job using your local/own dataset.
 
-You can also run with the mock data included without specifying the DATA_PATH parameter like below:
+You can also run with the mock data included without specifying the INPUT_PATH parameter like below:
 
 ```shell
 docker run -it --rm profile-analysis
@@ -54,15 +57,15 @@ It requires to find the top 5 and bottom 5 paying jobs based the average salary.
 
 For this question, I have two assumptions regarding how to define "popularity" of a job, and how to interpret "started in 2019".
 Firstly, I assume that the popularity scored 1 when the job title appears once in a person's job history, without considering the period the person working on that job.
-Secondly, regarding "started in 2019", I assume that if a job is not ended before 2019-01-01, it will be counted.
+Secondly, regarding "started in 2019", I assume that if the fromDate of a job is between [2019-01-01, 2020-01-01), it will be counted.
 
 For example, given the below job history:
 
-| title | fromDate | toDate | popularity | comment                                     |
-| ---- | ---- | ---- | ---- |---------------------------------------------|
-| data engineer | 2015-03-01 | 2019-01-01 | 1 | edge case, still not end before 2019-01-01  |
-| data engineer | 2016-02-01 | 2018-09-01 | 0 | end before 2019-01-01                       |
-| software engineer | 2020-01-01 | 2022-01-01 | 1 | start and end after 2019-01-01              |
+| title | fromDate   | toDate     | popularity | comment                    |
+| ---- |------------|------------|------------|----------------------------|
+| data engineer | 2015-03-01 | 2019-01-01 | 0          | started before 2019-01-01  |
+| data engineer | 2019-02-01 | 2019-09-01 | 1          | started in 2019 |
+| software engineer | 2019-01-01 | null       | 1          | started in 2019      |
 
 from the above example, both data engineer and software engineer will both have popularity score as 1.
 
