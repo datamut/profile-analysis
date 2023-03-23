@@ -1,3 +1,4 @@
+import time
 from typing import List
 
 from pyspark import SparkContext, StorageLevel
@@ -14,12 +15,17 @@ class Job:
 
     def run(self):
         sc = SparkContext.getOrCreate()
+        sc.setLogLevel("ERROR")
         spark = SparkSession(sc)
 
+        time_start = time.time()
         # q1: Load the dataset into a Spark dataframe
         df_raw = spark.read.json(self.job_args.input_path, schema=get_schema())
 
+        print("---------The following are the result for each of the questions----------")
+
         # q2: Print the schema
+        print("Answer 2 (1/2): Print the raw data schema:")
         df_raw.printSchema()
 
         # q3: How many records are there in the dataset?
@@ -33,6 +39,7 @@ class Job:
         df = insights.to_flattened(df_raw).persist(StorageLevel.DISK_ONLY)
 
         # show the new schema for the flattened DataFrame, this will be the DataFrame for the rest of the work
+        print("Answer 2 (2/2): Print the flattened data schema:")
         df.printSchema()
 
         # q4: What is the average salary for each profile?
@@ -90,3 +97,5 @@ class Job:
 
         df_top_salary.unpersist()
         df.unpersist(True)
+
+        print(f"The overall time used to process the data: {time.time() - time_start} seconds")

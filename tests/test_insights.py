@@ -67,7 +67,7 @@ def test_to_flattened(spark: SparkSession):
     ], schema=models.get_schema())
 
     df = insights.to_flattened(df_raw)
-    assert df.count() == 4
+    assert df.count() == 3
 
     row1 = Row(id="1", firstName="John", lastName="Doe", title="Engineer", location="Sydney",
                salary=10, fromDate=datetime(2019, 3, 1).date(), toDate=None)
@@ -75,12 +75,9 @@ def test_to_flattened(spark: SparkSession):
                salary=10, fromDate=datetime(2020, 1, 1).date(), toDate=None)
     row3 = Row(id="2", firstName="Jane", lastName="Doe", title="BA", location="Sydney",
                salary=8, fromDate=datetime(2012, 1, 1).date(), toDate=datetime(2019, 12, 31).date())
-    row4 = Row(id="3", firstName="A", lastName="Jane", title=None, location=None,
-               salary=None, fromDate=None, toDate=None)
     assert df.filter(df.id == "1").first() == row1
     assert df.filter((df.id == "2") & (df.title == "PO")).first() == row2
     assert df.filter((df.id == "2") & (df.title == "BA")).first() == row3
-    assert df.filter(df.id == "3").first() == row4
 
 
 def test_get_avg_salary(spark: SparkSession):

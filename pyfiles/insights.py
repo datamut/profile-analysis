@@ -28,8 +28,9 @@ def to_flattened(df: DataFrame) -> DataFrame:
 
     return (df
             .select("*", F.col("profile.*"))
-            # empty job history should explode as a row as well, we need to keep the user's profile
-            .select("*", F.explode_outer("jobHistory").alias("jobHistoryTemp"))
+            # profiles with empty jobHistory will be omitted, this is ok to answer all the questions,
+            # but it could be not working if the statistics is on the profile itself and not job related
+            .select("*", F.explode("jobHistory").alias("jobHistoryTemp"))
             .select("*", F.col("jobHistoryTemp.*"))
             .drop("profile", "jobHistory", "jobHistoryTemp"))
 
@@ -203,6 +204,7 @@ def save_dataframe(df: DataFrame, output_path: str):
     """
 
     (df
+     .repartition("year")
      .write
      .partitionBy("year")
      .mode("error")
