@@ -13,15 +13,15 @@ This project is built and tested on:
 
 ## Run
 
-To run a given dataset, we will need:
+To run a given dataset, please follow the below steps:
 
-1. Build the docker image
+### 1. Build the docker image
 
 ```shell
 docker build -t profile-analysis .
 ```
 
-2. Run with your dataset path
+### 2. Run with your dataset path
 
 ```shell
 docker run -it --rm -v /your/path/to/test_data:/data/input -v /your/output/path:/data/output -e INPUT_PATH=/data/input/ -e OUTPUT_PATH=/data/output/1 profile-analysis
@@ -44,6 +44,21 @@ docker run -it --rm profile-analysis
 Note that the mock data is a masked sample dataset based on the given test data (even the given test data should be already masked).
 
 ## Unit Tests
+
+You can simply run the unit tests with coverage with two simple steps:
+
+### 1. Build the docker image for unit tests
+
+```shell
+docker build -t profile-analysis-test -f test.Dockerfile .
+```
+
+### 2. Run the unit tests with coverage
+
+```shell
+docker run -it --rm profile-analysis-test
+```
+
 
 ## CI/CD
 
